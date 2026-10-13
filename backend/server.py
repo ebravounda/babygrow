@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from core import db, clean, now, iso
-import routes_main, routes_articles, routes_public, routes_insights
+import routes_main, routes_articles, routes_public, routes_insights, routes_import
 from routes_articles import generate_events, GenIn, factcheck_internal
 from publisher import publish_article
 
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("motorseo")
 
 app = FastAPI(title="Motor SEO/AEO")
-for r in (routes_main, routes_articles, routes_public, routes_insights):
+for r in (routes_main, routes_articles, routes_public, routes_insights, routes_import):
     app.include_router(r.router)
 
 

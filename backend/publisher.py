@@ -10,7 +10,7 @@ from content import render_html, numeric_claims, jsonld, to_json
 def article_url(project, article):
     pattern = project.get("blog_url_pattern")
     if pattern and "{slug}" in pattern:
-        return pattern.replace("{slug}", article["slug"])
+        return pattern.replace("/blog/blog/", "/blog/").replace("{slug}", article["slug"])
     return f"{project.get('base_url', '')}/api/blog/{project['id']}/{article['slug']}"
 
 

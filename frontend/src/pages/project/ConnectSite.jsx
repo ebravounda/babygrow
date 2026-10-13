@@ -51,7 +51,8 @@ export default function ConnectSite() {
   const brand = project.brand?.brand_name || project.name;
   const saveDomain = async () => {
     try {
-      const d = domain.replace(/\/$/, "");
+      const d = domain.trim().replace(/\/+$/, "").replace(/\/blog$/, "");
+      setDomain(d);
       const { data } = await api.patch(`/projects/${project.id}`, { blog_url_pattern: d ? `${d}/blog/{slug}` : "" });
       setProject(data); toast.success("Dominio guardado");
     } catch (e) { toast.error(errMsg(e)); }

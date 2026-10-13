@@ -1,5 +1,7 @@
+import asyncio
 import base64
 import json
+import os
 import re
 
 import openai
@@ -95,6 +97,10 @@ async def generate_events(body: GenIn, status="draft"):
         yield {"t": "status", "c": "Optimizando metadatos, FAQ y datos estructurados"}
         await db.articles.update_one({"_id": aid}, {"$set": {"status": status}})
         art = await finalize(project, topic, aid, "".join(parts), provider)
+        if await has_image_key():
+            yield {"t": "status", "c": "Creando la portada con IA"}
+            await cover_safe(aid)
+            art = await get_article(aid)
         yield {"t": "done", "article": art}
     except HTTPException as e:
         await db.articles.update_one({"_id": aid}, {"$set": {"status": "draft", "content": "".join(parts)}})
@@ -211,12 +217,14 @@ async def regenerate_section(aid: str, body: SectionIn, user=Depends(current_use
     return await update_article(aid, {"content": content}, user)
 
 
-@router.post("/articles/{aid}/image")
-async def generate_image(aid: str, body: dict, user=Depends(current_user)):
+async def has_image_key():
+    return bool(await get_key("openai") or await get_key("gemini"))
+
+
+async def create_image(aid, kind="cover", style=None):
     a = await get_article(aid)
     p = await get_project(a["project_id"])
-    kind = body.get("kind", "cover")
-    style = body.get("style", "fotografía editorial limpia, luz natural, sin texto")
+    style = style or "fotografía editorial limpia, luz natural, sin texto"
     prompt = (f"Imagen de portada para un artículo de blog titulado '{a['title']}' de la marca {(p.get('brand') or {}).get('brand_name') or p['name']}. {style}."
               if kind == "cover" else
               f"Infografía clara y minimalista en español que resume: {'; '.join((a.get('key_points') or [])[:5]) or a['title']}. Texto legible y corto.")
@@ -243,7 +251,8 @@ async def generate_image(aid: str, body: dict, user=Depends(current_user)):
     if not data:
         raise HTTPException(502, "No se generó ninguna imagen")
     fid = await fs.upload_from_stream(f"{aid}-{kind}.png", data, metadata={"contentType": "image/png", "project_id": p["id"]})
-    url = f"{p.get('base_url', '')}/api/media/{fid}"
+    base = os.environ.get("PUBLIC_URL", "").rstrip("/") or p.get("base_url", "")
+    url = f"{base}/api/media/{fid}"
     await db.usage.insert_one({"_id": new_id(), "provider": "openai" if await get_key("openai") else "gemini", "project_id": p["id"],
                                "article_id": aid, "purpose": "imagen", "input_tokens": 0, "output_tokens": 0, "cost": 0.04,
                                "month": iso()[:7], "created_at": iso()})
@@ -251,8 +260,65 @@ async def generate_image(aid: str, body: dict, user=Depends(current_user)):
     upd = {"$push": {"images": img}}
     if kind == "cover":
         upd["$set"] = {"cover_url": url}
+        upd["$unset"] = {"cover_error": ""}
     await db.articles.update_one({"_id": aid}, upd)
     return img
+
+
+@router.post("/articles/{aid}/image")
+async def generate_image(aid: str, body: dict, user=Depends(current_user)):
+    return await create_image(aid, body.get("kind", "cover"), body.get("style"))
+
+
+COVER_JOBS = {}
+
+
+async def cover_safe(aid):
+    try:
+        await create_image(aid, "cover")
+        return True
+    except Exception as e:
+        await db.articles.update_one({"_id": aid}, {"$set": {"cover_error": str(getattr(e, "detail", e))[:200]}})
+        return False
+
+
+async def run_covers(pid, ids):
+    job = COVER_JOBS[pid]
+    for aid in ids:
+        if await cover_safe(aid):
+            job["done"] += 1
+        else:
+            job["errors"] += 1
+    job["running"] = False
+
+
+def missing_cover_query(pid):
+    return {"project_id": pid, "status": {"$ne": "generating"}, "$or": [{"cover_url": None}, {"cover_url": ""}, {"cover_url": {"$exists": False}}]}
+
+
+def start_covers(pid, ids):
+    if not ids or (COVER_JOBS.get(pid) or {}).get("running"):
+        return False
+    COVER_JOBS[pid] = {"running": True, "total": len(ids), "done": 0, "errors": 0}
+    asyncio.create_task(run_covers(pid, ids))
+    return True
+
+
+@router.get("/projects/{pid}/covers")
+async def covers_status(pid: str, user=Depends(current_user)):
+    return {"missing": await db.articles.count_documents(missing_cover_query(pid)), "has_key": await has_image_key(),
+            "job": COVER_JOBS.get(pid)}
+
+
+@router.post("/projects/{pid}/covers/missing")
+async def covers_missing(pid: str, user=Depends(current_user)):
+    if not await has_image_key():
+        raise HTTPException(400, "Para crear portadas necesitas la clave de OpenAI o de Gemini en Ajustes.")
+    if (COVER_JOBS.get(pid) or {}).get("running"):
+        raise HTTPException(409, "Ya se están creando portadas para este proyecto.")
+    ids = [a["_id"] async for a in db.articles.find(missing_cover_query(pid), {"_id": 1})]
+    start_covers(pid, ids)
+    return {"queued": len(ids)}
 
 
 @router.post("/articles/{aid}/repurpose")
