@@ -13,7 +13,7 @@ Todo corre en Docker: base de datos (MongoDB), servidor (backend) y web (fronten
 ```
 Muestra tus contenedores actuales y comprueba que el puerto, los nombres, la RAM, el disco y la CPU sean compatibles. El instalador la ejecuta también y te pide confirmación antes de seguir.
 
-**Aislamiento garantizado:** todo lleva el prefijo `motorseo` (contenedores, red `motorseo_motorseo`, volumen `motorseo_mongo_data` e imágenes `motorseo-*`). MongoDB no se publica fuera de Docker. La app solo escucha en `127.0.0.1` y en un puerto libre que se elige automáticamente. Los registros están limitados a 30 MB por servicio, la memoria está limitada (Mongo 1 GB, backend 1 GB, web 256 MB) y la limpieza de imágenes solo borra las de Motor SEO.
+**Aislamiento garantizado:** todo lleva el prefijo `motorseo` (contenedores, red `motorseo_motorseo`, volumen `motorseo_mongo_data` e imágenes `motorseo-*`). MongoDB no se publica fuera de Docker. La app solo escucha en `127.0.0.1` y en un puerto libre que se elige automáticamente. Los registros están limitados a 30 MB por servicio, la memoria está limitada (Mongo 640 MB, backend 640 MB, web 64 MB; ~1,3 GB en total) y la limpieza de imágenes solo borra las de Motor SEO.
 
 ## 1. Primera instalación (una sola vez)
 Por SSH en tu servidor:
@@ -63,6 +63,8 @@ El script hace una copia de seguridad, descarga los cambios y reconstruye la app
 - Cambiar la contraseña de administrador: edita `ADMIN_PASSWORD` en `.env.prod` y ejecuta `docker compose up -d backend`.
 
 ## Problemas comunes
+- **Poca RAM o swap pequeño** (al compilar sale `Killed` o `exit code 137`): crea 4 GB de swap una sola vez:
+  `sudo fallocate -l 4G /swapfile2 && sudo chmod 600 /swapfile2 && sudo mkswap /swapfile2 && sudo swapon /swapfile2 && echo '/swapfile2 none swap sw 0 0' | sudo tee -a /etc/fstab`
 - **El contenedor `mongo` se reinicia sin parar** (CPU sin AVX en VPS antiguos): añade `MONGO_IMAGE=mongo:4.4` a `.env.prod` y ejecuta `docker compose up -d`.
 - **El puerto 8090 está ocupado**: cambia `APP_PORT` en `.env.prod`, ejecuta `docker compose up -d` y usa el nuevo puerto en el proxy de aaPanel.
 - **Cambias de dominio**: edita `PUBLIC_URL` en `.env.prod` y ejecuta `./deploy/update.sh`.

@@ -35,12 +35,16 @@ ADMIN_EMAIL=${ADMIN_EMAIL}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 EOF
   chmod 600 .env.prod
-  grep -q avx /proc/cpuinfo || echo "MONGO_IMAGE=mongo:4.4" >> .env.prod
+  if [ "$(uname -m)" = "x86_64" ]; then grep -q avx /proc/cpuinfo || echo "MONGO_IMAGE=mongo:4.4" >> .env.prod
+  else grep -q asimddp /proc/cpuinfo || echo "MONGO_IMAGE=mongo:4.4" >> .env.prod; fi
   echo ">> Creado .env.prod (guárdalo: FERNET_KEY cifra tus claves de IA)."
 fi
 
 ln -sf .env.prod .env
-docker compose up -d --build
+echo ">> Compilando (una imagen cada vez para no saturar la RAM)…"
+docker compose build backend
+docker compose build frontend
+docker compose up -d
 echo ""
 echo "Listo. La app escucha en http://127.0.0.1:$(grep APP_PORT .env.prod | cut -d= -f2)"
 echo "Ahora en aaPanel: sitio ${DOMAIN} → Reverse proxy → http://127.0.0.1:$(grep APP_PORT .env.prod | cut -d= -f2)"

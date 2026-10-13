@@ -1,7 +1,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 ARG PUBLIC_URL_ARG
-ENV REACT_APP_BACKEND_URL=$PUBLIC_URL_ARG GENERATE_SOURCEMAP=false CI=false
+ENV REACT_APP_BACKEND_URL=$PUBLIC_URL_ARG GENERATE_SOURCEMAP=false CI=false NODE_OPTIONS=--max-old-space-size=1280
 COPY frontend/package.json frontend/yarn.lock ./
 RUN corepack enable && yarn install --frozen-lockfile --network-timeout 600000
 COPY frontend/ .

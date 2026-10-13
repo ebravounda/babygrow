@@ -21,9 +21,15 @@ if ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$PORT$"; then
 else ok "Puerto $PORT libre"; fi
 
 echo "== Recursos"
-free -m | awk '/Mem:/ {printf "  [i]   RAM total %s MB, disponible %s MB (Motor SEO usa como máx. ~2,3 GB)\n",$2,$7}'
+free -m | awk '/Mem:/ {printf "  [i]   RAM total %s MB, disponible %s MB (Motor SEO usa ~1,3 GB en marcha)\n",$2,$7}'
+free -m | awk '/Swap:/ {if ($2 < 2000) print "  [!!]  Swap de solo " $2 " MB: recomendable 4 GB para compilar (ver DESPLIEGUE.md)"; else print "  [OK]  Swap " $2 " MB"}'
 df -h . | awk 'NR==2 {printf "  [i]   Disco libre: %s (necesita ~5 GB)\n",$4}'
-grep -q avx /proc/cpuinfo && ok "CPU con AVX (mongo:7 compatible)" || warn "CPU sin AVX: pon MONGO_IMAGE=mongo:4.4 en .env.prod"
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then
+  grep -q avx /proc/cpuinfo && ok "CPU x86 con AVX (mongo:7 compatible)" || warn "CPU x86 sin AVX: se usará mongo:4.4"
+else
+  grep -q asimddp /proc/cpuinfo && ok "CPU ARM ($ARCH) ARMv8.2+ (mongo:7 compatible)" || warn "CPU ARM antigua: se usará mongo:4.4"
+fi
 
 echo "== Contenedores existentes (no se tocarán)"
 docker ps --format '  - {{.Names}}  [{{.Ports}}]'
