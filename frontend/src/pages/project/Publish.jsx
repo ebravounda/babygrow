@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader, CopyBox } from "@/components/common";
+import ConnectSite from "./ConnectSite";
 import { useProject } from "./ProjectLayout";
 import { api, errMsg, BACKEND } from "@/lib/api";
 
@@ -94,14 +95,16 @@ export default function Publish() {
   return (
     <div>
       <PageHeader eyebrow="Conecta tus sitios" title="Publicar" desc="Conecta cada sitio una sola vez. Elige widget, API, publicación nativa o todas a la vez." />
-      <Tabs defaultValue="widget">
+      <Tabs defaultValue="connect">
         <TabsList className="mb-6 bg-slate-900 border border-slate-800 flex-wrap h-auto">
+          <TabsTrigger value="connect" data-testid="publish-tab-connect"><Bot size={14} className="mr-1.5" />Conectar otro proyecto</TabsTrigger>
           <TabsTrigger value="widget" data-testid="publish-tab-widget"><Code2 size={14} className="mr-1.5" />Widget</TabsTrigger>
           <TabsTrigger value="feeds" data-testid="publish-tab-feeds"><Rss size={14} className="mr-1.5" />API, RSS y llms.txt</TabsTrigger>
           <TabsTrigger value="wordpress" data-testid="publish-tab-wordpress"><Plug size={14} className="mr-1.5" />WordPress</TabsTrigger>
           <TabsTrigger value="shopify" data-testid="publish-tab-shopify"><Plug size={14} className="mr-1.5" />Shopify</TabsTrigger>
           <TabsTrigger value="schedule" data-testid="publish-tab-schedule"><CalendarClock size={14} className="mr-1.5" />Calendario y piloto</TabsTrigger>
         </TabsList>
+        <TabsContent value="connect"><ConnectSite /></TabsContent>
         <TabsContent value="widget">
           <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6">
             <div className="space-y-5">

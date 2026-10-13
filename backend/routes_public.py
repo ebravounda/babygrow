@@ -100,6 +100,14 @@ async def sitemap(pid: str, key: str = ""):
                     media_type="application/xml")
 
 
+@router.get("/public/{pid}/styles.css")
+async def styles(pid: str):
+    p = await get_project(pid)
+    color = (p.get("widget") or {}).get("color", "#10B981")
+    return Response(f".mseo-root{{--mseo-c:{color}}}" + ARTICLE_CSS, media_type="text/css",
+                    headers={"Cache-Control": "public, max-age=600", "Access-Control-Allow-Origin": "*"})
+
+
 @router.get("/public/{pid}/llms.txt")
 async def llms(pid: str):
     p = await get_project(pid)
