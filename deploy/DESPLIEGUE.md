@@ -68,6 +68,7 @@ El script hace una copia de seguridad, descarga los cambios y reconstruye la app
 - **El contenedor `mongo` se reinicia sin parar** (CPU sin AVX en VPS antiguos): añade `MONGO_IMAGE=mongo:4.4` a `.env.prod` y ejecuta `docker compose up -d`.
 - **El puerto 8090 está ocupado**: cambia `APP_PORT` en `.env.prod`, ejecuta `docker compose up -d` y usa el nuevo puerto en el proxy de aaPanel.
 - **Cambias de dominio**: edita `PUBLIC_URL` en `.env.prod` y ejecuta `./deploy/update.sh`.
+- **No se ve en el dominio**: comprueba `curl -s http://127.0.0.1:8090/api/`. Si responde, el fallo está en el proxy de aaPanel o en el DNS/SSL de Cloudflare. Si no responde, revisa `docker compose ps` y `docker compose logs backend`.
 
 ## Después de desplegar
 En OpenFactura, pega el nuevo **enlace de conexión**: Proyecto → Publicar → Conectar otro proyecto. Ahora empezará por `https://seo.mitiendapro.com/api/public/...`.
