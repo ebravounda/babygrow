@@ -5,6 +5,7 @@ import os
 import re
 
 import openai
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -268,6 +269,24 @@ async def create_image(aid, kind="cover", style=None):
 @router.post("/articles/{aid}/image")
 async def generate_image(aid: str, body: dict, user=Depends(current_user)):
     return await create_image(aid, body.get("kind", "cover"), body.get("style"))
+
+
+@router.post("/articles/{aid}/images/delete")
+async def delete_image(aid: str, body: dict, user=Depends(current_user)):
+    a = await get_article(aid)
+    url = body.get("url") or ""
+    if url not in [i.get("url") for i in a.get("images") or []] and url != a.get("cover_url"):
+        raise HTTPException(404, "Imagen no encontrada en este artículo")
+    upd = {"$pull": {"images": {"url": url}}}
+    if url == a.get("cover_url"):
+        upd["$unset"] = {"cover_url": ""}
+    await db.articles.update_one({"_id": aid}, upd)
+    fid = url.rstrip("/").split("/api/media/")[-1]
+    try:
+        await fs.delete(ObjectId(fid))
+    except Exception:
+        pass
+    return {"ok": True}
 
 
 COVER_JOBS = {}

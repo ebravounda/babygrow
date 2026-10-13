@@ -1,0 +1,25 @@
+{
+  "summary": "End-to-end testing of import flow (sitemap scan + content paste), cover generation guard rails, publisher.article_url /blog/blog/ collapse and ConnectSite domain trimming. Backend: 11/11 pytest cases pass in /app/backend/tests/test_import_covers.py. Frontend: Library page shows library-missing-covers-button with correct count '(3)', library-import-button opens import-dialog, scanning https://openfactura.es/sitemap.xml returns 3 import-found-i items, article rows render '· importado' tag and w-16 cover placeholder, ConnectSite correctly strips trailing /blog so 'https://openfactura.es/blog' is saved and reloads as 'https://openfactura.es' (blog_url_pattern persists as 'https://openfactura.es/blog/{slug}').",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_import_covers.py", "/app/test_reports/pytest/import_covers.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes_import.py scan(): regex r'/(blog|articulos?|noticias|posts?)/[^/]+/?$' correctly picks only post-level URLs from sitemap; falls back to all URLs when no posts match. Fine.",
+    "routes_import.py do_import(): 400-char threshold for pasted content is reasonable to force useful content; needs_content short-circuit lets the UI prompt the user to paste. Good UX.",
+    "routes_articles.py start_covers(): uses asyncio.create_task without storing the task reference; if the event loop GCs it, work could be dropped. Low-risk in uvicorn but consider holding the task in COVER_JOBS[pid]['task'].",
+    "routes_articles.py create_image() for Gemini: iterates r.candidates[0].content.parts but keeps only the LAST inline_data; if the model returns text+image parts the loop still works but it should break when found and raise clearly if none. Also missing: await base64.b64decode(part.inline_data.data) is not needed because Gemini SDK already returns bytes — current code assigns bytes directly to data, good.",
+    "publisher.article_url() collapses '/blog/blog/' once; if pattern were '/blog/blog/blog/' it would still leave '/blog/blog/'. Current ConnectSite UI strips trailing /blog before saving so this is defensive. OK.",
+    "ConnectSite saveDomain regex .replace(/\\/blog$/, '') strips only one trailing /blog segment — matches backend expectation. If user types 'https://x.com/blog/blog' both layers will leave '/blog' intact; low priority.",
+    "Library.jsx and ImportDialog.jsx: all required data-testid present (library-missing-covers-button, library-import-button, import-dialog, import-url-input, import-scan-button, import-found-i, import-run-button, import-paste-title-i, import-paste-content-i, import-pasted-button, import-publish-checkbox, article-cover-i).",
+    "Login button in /login does NOT have type='submit'; pressing Enter in password field won't trigger submission. Minor UX nit, not blocking."
+  ],
+  "updated_files": ["/app/backend/tests/test_import_covers.py"],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "100% (all required testids and flows verified)"},
+  "test_credentials": "admin@motorseo.app / Admin2026!",
+  "seed_data_creation": "Created one TEST article in TestImport project (slug test-pasted-<ts>) during pytest run. Did not delete to leave realistic data for next agent. Fake openai key was added and DELETED. blog_url_pattern on TestImport was mutated during the collapse test and restored to original value in finally{}.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend regression file /app/backend/tests/test_import_covers.py covers: sitemap scan, SPA needs_content, pasted-content import with GET verification, duplicate exists, httpbin static import, covers status/missing without key (400 Spanish error), single-image endpoint without key, covers queue with fake openai key (job finishes with errors + article.cover_error populated), article_url /blog/blog/ collapse via public article detail endpoint (publishes temporarily then unpublishes). TestImport pid 5d55c3f9c1244c6787ba723862a0e239 now has 4+ articles (including one TEST_ prefixed). OpenFactura project untouched.",
+  "rca of the issue": "N/A - all tested features work as specified."
+}

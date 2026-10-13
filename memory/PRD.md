@@ -20,6 +20,8 @@ The user asked for an analysis of babylovegrowth.ai (an AI SEO tool), then appro
 - Stats (views, product/CTA clicks, CTR, leads), leads inbox + Resend email alert
 - AI visibility tracking (GPT/Claude/Gemini/Perplexity), technical audit, AI costs page
 - Tested: backend 35/35; frontend all pages; live writing verified in the UI
+- 2026-10-13: Self-host Docker on aaPanel (deploy/*.sh, aapanel-site.sh); Perplexity moved to Agent API /v1/responses (preset fast); AI covers auto on new articles + "Crear portadas que faltan" bulk job; import existing articles (sitemap scan, HTML→markdown, paste fallback for JS sites); delete covers/infographics; /blog/blog/ URL fix. Prod: seo.mitiendapro.com (separate DB from preview)
+
 
 ## Backlog
 - P0 Phase 2: accounts and roles (admin/agency/client), agency workspaces, white label, Stripe plans, monthly reports, Search Console, DataForSEO, competitor gaps, programmatic SEO, decay detection + refresh, translation/hreflang, A/B tests, revenue attribution, copilot, weekly digest

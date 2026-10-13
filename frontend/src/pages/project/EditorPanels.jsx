@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShieldCheck, ShieldAlert, Image as ImageIcon, Repeat2, Link2, AlertTriangle, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Image as ImageIcon, Repeat2, Link2, AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,13 +83,35 @@ export function FactCheckPanel({ a, onChange }) {
   );
 }
 
+function DeletableImage({ url, label, testid, onDelete, busy, className }) {
+  return (
+    <div className="relative group" data-testid={testid}>
+      <a href={url} target="_blank" rel="noreferrer"><img src={url} alt="" className={className} /></a>
+      {label && <span className="absolute left-1.5 top-1.5 text-[10px] font-semibold bg-black/70 text-white px-1.5 py-0.5 rounded">{label}</span>}
+      <button type="button" data-testid={`${testid}-delete`} disabled={busy} onClick={onDelete} title="Eliminar imagen"
+        className="absolute right-1.5 top-1.5 p-1.5 rounded-full bg-black/70 text-rose-300 hover:bg-rose-600 hover:text-white transition-colors">
+        <Trash2 size={13} />
+      </button>
+    </div>
+  );
+}
+
 export function ImagesPanel({ a, onChange }) {
   const [busy, run] = useAction();
   const gen = (kind) => run(async () => { await api.post(`/articles/${a.id}/image`, { kind }); toast.success("Imagen generada"); onChange(); });
+  const del = (url, what) => {
+    if (!window.confirm(`¿Eliminar ${what}? No se puede deshacer.`)) return;
+    run(async () => { await api.post(`/articles/${a.id}/images/delete`, { url }); toast.success("Imagen eliminada"); onChange(); });
+  };
+  const others = (a.images || []).filter((i) => i.url !== a.cover_url);
   return (
     <Box title="Imágenes con IA" icon={ImageIcon} testid="images-panel">
-      {a.cover_url && <img src={a.cover_url} alt="" className="rounded-lg mb-3 aspect-video object-cover w-full" data-testid="cover-image" />}
-      <div className="grid grid-cols-3 gap-2 mb-3">{(a.images || []).filter((i) => i.url !== a.cover_url).map((i) => <a key={i.url} href={i.url} target="_blank" rel="noreferrer"><img src={i.url} alt="" className="rounded aspect-square object-cover" /></a>)}</div>
+      {a.cover_url && <div className="mb-3"><DeletableImage url={a.cover_url} label="Portada" testid="cover-image" busy={busy}
+        onDelete={() => del(a.cover_url, "la portada")} className="rounded-lg aspect-video object-cover w-full" /></div>}
+      {!!others.length && <div className="grid grid-cols-3 gap-2 mb-3">{others.map((i, n) => (
+        <DeletableImage key={i.url} url={i.url} label={i.kind === "cover" ? "Portada antigua" : "Infografía"} testid={`image-${n}`} busy={busy}
+          onDelete={() => del(i.url, i.kind === "cover" ? "esta portada antigua" : "esta infografía")} className="rounded aspect-square object-cover w-full" />
+      ))}</div>}
       <div className="flex gap-2">
         <Button data-testid="generate-cover-button" size="sm" variant="secondary" className="rounded-full flex-1" disabled={busy} onClick={() => gen("cover")}>{busy ? "Generando…" : "Portada"}</Button>
         <Button data-testid="generate-infographic-button" size="sm" variant="secondary" className="rounded-full flex-1" disabled={busy} onClick={() => gen("infographic")}>Infografía</Button>
