@@ -100,6 +100,16 @@ async def sitemap(pid: str, key: str = ""):
                     media_type="application/xml")
 
 
+@router.get("/public/{pid}/connect")
+async def connect_info(pid: str, request: Request, key: str = ""):
+    p = await project_by_key(pid, key)
+    api = f"{base_url(request)}/api/public/{pid}"
+    return {"ok": True, "project": p["name"], "brand": (p.get("brand") or {}).get("brand_name") or p["name"],
+            "api_base": api, "key": key, "published": await db.articles.count_documents({"project_id": pid, "status": "published"}),
+            "endpoints": {"articles": f"{api}/articles", "article": f"{api}/articles/{{slug}}", "styles": f"{api}/styles.css",
+                          "track": f"{api}/track", "lead": f"{api}/lead", "sitemap": f"{api}/sitemap.xml"}}
+
+
 @router.get("/public/{pid}/styles.css")
 async def styles(pid: str):
     p = await get_project(pid)

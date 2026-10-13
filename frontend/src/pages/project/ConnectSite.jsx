@@ -6,39 +6,46 @@ import { CopyBox } from "@/components/common";
 import { useProject } from "./ProjectLayout";
 import { api, errMsg, BACKEND } from "@/lib/api";
 
-function buildPrompt(base, key, domain, brand) {
+function buildPrompt(domain, brand) {
   const d = domain.replace(/\/$/, "") || "https://TU-DOMINIO";
-  return `Integra en esta app un BLOG conectado a mi motor de contenidos SEO externo. NO generes artículos tú: solo muéstralos. Los artículos nuevos se crean y publican automáticamente en el motor y deben aparecer aquí solos.
+  return `Crea un módulo de BLOG conectado a un motor de contenidos SEO externo. NO generes artículos tú: solo muéstralos. Los artículos se crean y publican automáticamente en el motor y deben aparecer aquí solos.
+IMPORTANTE: la app está en producción. NO modifiques ningún archivo .env ni variables de entorno. La conexión se configura desde el panel de administración y se guarda en la base de datos.
 
-DATOS DE CONEXIÓN (guárdalos en variables de entorno del frontend):
-REACT_APP_BLOG_API=${base}
-REACT_APP_BLOG_KEY=${key}
+1. PANEL DE ADMINISTRACIÓN → nueva sección "Blog SEO" (solo administradores):
+   - Campo "Enlace de conexión" (una URL con este formato: https://.../api/public/{id}/connect?key={clave}).
+   - Botón "Probar conexión": el backend hace GET a ese enlace. Si la respuesta trae ok=true, muestra "Conectado a {brand} · {published} artículos publicados".
+   - Botón "Guardar": guarda en la base de datos (colección/tabla blog_settings) los campos api_base y key que devuelve el enlace, más enabled=true. Muestra la clave enmascarada.
+   - Botón "Desconectar": borra la configuración.
 
-ENDPOINTS (públicos, solo lectura, CORS abierto):
-- GET {BLOG_API}/articles?key={BLOG_KEY} → [{id, title, slug, excerpt, meta_title, meta_description, cover_url, published_at, cluster}]
-- GET {BLOG_API}/articles/{slug}?key={BLOG_KEY} → {id, title, slug, html, meta_title, meta_description, cover_url, published_at, faq, key_points, author:{name, bio, photo_url, credentials}, jsonld}
-- CSS de los artículos: {BLOG_API}/styles.css
-- POST {BLOG_API}/track  body {key, type, article_id}  (type: "view" | "product_click" | "cta_click")
-- POST {BLOG_API}/lead   body {key, email, name, message, article_id}
-- Sitemap: {BLOG_API}/sitemap.xml?key={BLOG_KEY}
+2. BACKEND: proxy, para que la clave no viaje al navegador. Todos los endpoints leen api_base y key de blog_settings. Si no hay configuración, devuelven una lista vacía o 404:
+   - GET  /api/blog/articles        → GET {api_base}/articles?key={key}
+   - GET  /api/blog/articles/{slug} → GET {api_base}/articles/{slug}?key={key}
+   - POST /api/blog/track   body {type, article_id} → POST {api_base}/track con {key, type, article_id}
+   - POST /api/blog/lead    body {email, name, message, article_id} → POST {api_base}/lead con {key, ...}
+   - GET  /api/blog-sitemap.xml → GET {api_base}/sitemap.xml?key={key}, devuelto como application/xml
+   - GET  /api/blog/styles.css → GET {api_base}/styles.css, devuelto como text/css
+   Formato de los datos del motor:
+   - lista: [{id, title, slug, excerpt, meta_title, meta_description, cover_url, published_at, cluster}]
+   - artículo: {id, title, slug, html, meta_title, meta_description, cover_url, published_at, faq, key_points, author:{name, bio, photo_url, credentials}, jsonld}
+   Timeout de 15 s. Sin caché (o caché máxima de 5 min).
 
-QUÉ CONSTRUIR:
-1. Ruta /blog: título "Blog de ${brand}", cuadrícula de tarjetas (portada, título, extracto, fecha) con el diseño de esta app. Sin caché: pide la lista cada vez que se carga la página.
-2. Ruta /blog/:slug:
-   - Pinta el campo html con dangerouslySetInnerHTML dentro de <div className="mseo-root">. Carga {BLOG_API}/styles.css con una etiqueta <link>.
-   - Muestra el título H1, el autor y la fecha, la portada y, al final, una caja "Sobre el autor".
-   - Usa react-helmet-async para: <title>=meta_title, meta description, canonical=${d}/blog/{slug}, og:title, og:description, og:image=cover_url, y un <script type="application/ld+json"> con JSON.stringify(jsonld).
-   - Al cargar, envía track type "view". Captura los clics en enlaces con el atributo data-track y envía track con ese valor.
-   - Al final, formulario de contacto (nombre, email, mensaje) que hace POST a /lead y muestra "¡Gracias!".
-   - Si la API devuelve 404, muestra "Artículo no encontrado" con un enlace a /blog.
-3. Añade "Blog" al menú principal y al footer, y una sección "Últimos artículos" (3 tarjetas) en la home.
-4. Backend: crea GET /api/blog-sitemap.xml que haga de proxy de {BLOG_API}/sitemap.xml?key={BLOG_KEY} y lo devuelva como application/xml.
-5. No hardcodees las URLs: usa las variables de entorno de arriba.`;
+3. FRONTEND (usa solo los endpoints /api/blog del propio backend):
+   - Ruta /blog: título "Blog de ${brand}", cuadrícula de tarjetas (portada, título, extracto, fecha) con el diseño actual de la app. Si no hay artículos, muestra "Pronto publicaremos artículos".
+   - Ruta /blog/:slug:
+     • Pinta el campo html con dangerouslySetInnerHTML dentro de <div className="mseo-root"> y carga /api/blog/styles.css con una etiqueta <link>.
+     • Muestra el H1, el autor y la fecha, la portada y, al final, una caja "Sobre el autor".
+     • Usa react-helmet-async para: <title>=meta_title, meta description, canonical=${d}/blog/{slug}, og:title, og:description, og:image=cover_url, y un <script type="application/ld+json"> con JSON.stringify(jsonld).
+     • Al cargar, envía track "view". En los clics de enlaces con el atributo data-track, envía track con ese valor.
+     • Al final, formulario de contacto (nombre, email, mensaje) → POST /api/blog/lead → "¡Gracias! Te contactaremos pronto".
+     • Si la API devuelve 404, muestra "Artículo no encontrado" con un enlace a /blog.
+   - Añade "Blog" al menú principal y al footer, y una sección "Últimos artículos" (3 tarjetas) en la home. Si el blog no está conectado, oculta esa sección.
+
+4. No toques nada más de la app: facturación, impuestos, usuarios y pagos se quedan como están.`;
 }
 
 export default function ConnectSite() {
   const { project, setProject } = useProject();
-  const base = `${BACKEND}/api/public/${project.id}`;
+  const connectUrl = `${BACKEND}/api/public/${project.id}/connect?key=${project.public_key}`;
   const initial = (project.blog_url_pattern || "").replace(/\/blog\/\{slug\}$/, "");
   const [domain, setDomain] = useState(initial);
   const brand = project.brand?.brand_name || project.name;
@@ -46,7 +53,7 @@ export default function ConnectSite() {
     try {
       const d = domain.replace(/\/$/, "");
       const { data } = await api.patch(`/projects/${project.id}`, { blog_url_pattern: d ? `${d}/blog/{slug}` : "" });
-      setProject(data); toast.success("Dominio guardado: sitemap, canonical y enlaces internos apuntarán a tu web");
+      setProject(data); toast.success("Dominio guardado");
     } catch (e) { toast.error(errMsg(e)); }
   };
   return (
@@ -54,22 +61,26 @@ export default function ConnectSite() {
       <div className="space-y-5">
         <div className="panel p-6 space-y-3">
           <p className="font-heading font-semibold text-lg">1. Dominio del otro sitio</p>
-          <p className="text-sm text-slate-400">La URL pública de tu otra app (ej. https://openfactura.cl). Los artículos tendrán su URL canónica en tu dominio: {domain || "https://tu-dominio"}/blog/slug.</p>
+          <p className="text-sm text-slate-400">Los artículos tendrán su URL canónica en {domain || "https://tu-dominio"}/blog/slug.</p>
           <div className="flex gap-2">
-            <Input data-testid="connect-domain-input" className="font-mono" placeholder="https://openfactura.cl" value={domain} onChange={(e) => setDomain(e.target.value)} />
+            <Input data-testid="connect-domain-input" className="font-mono" placeholder="https://openfactura.es" value={domain} onChange={(e) => setDomain(e.target.value)} />
             <Button data-testid="connect-domain-save" onClick={saveDomain} className="rounded-full">Guardar</Button>
           </div>
         </div>
+        <div className="panel p-6 space-y-3">
+          <p className="font-heading font-semibold text-lg">2. Enlace de conexión</p>
+          <p className="text-sm text-slate-400">Pégalo en el panel de administración de tu otro sitio, sección «Blog SEO». No hace falta tocar ningún .env.</p>
+          <CopyBox value={connectUrl} testid="copy-connect-url" />
+        </div>
         <div className="panel p-6 text-sm text-slate-300 space-y-2">
-          <p className="font-heading font-semibold text-lg text-white">2. Pega el prompt en tu otro proyecto</p>
-          <p>Abre la ventana de desarrollo de tu otro sitio (en Emergent u otra herramienta) y pega el prompt de la derecha. Construirá las páginas /blog y /blog/:slug conectadas a este motor.</p>
-          <p className="font-heading font-semibold text-lg text-white pt-3">3. Activa el modo automático aquí</p>
-          <p>En la pestaña <b>Calendario y piloto</b>: activa el piloto automático y, si quieres, «Publicar sin revisión». En el plan, aprueba los temas. Los artículos se escriben y publican solos, y aparecen en tu otro sitio sin tocar nada.</p>
-          <p className="font-heading font-semibold text-lg text-white pt-3">4. Google</p>
-          <p>Cuando esté publicado, envía <span className="font-mono text-emerald-400">{domain || "https://tu-dominio"}/api/blog-sitemap.xml</span> a Google Search Console.</p>
+          <p className="font-heading font-semibold text-lg text-white">3. Prompt (una sola vez)</p>
+          <p>Pega el prompt de la derecha en la ventana de desarrollo de tu otro sitio. Crea el módulo de blog y la sección «Blog SEO» del panel.</p>
+          <p className="font-heading font-semibold text-lg text-white pt-3">4. Modo automático</p>
+          <p>Aquí, en <b>Calendario y piloto</b>: activa el piloto automático. Los artículos aparecen solos en tu web.</p>
+          <p className="text-xs text-amber-400 pt-2">Si publicas esta herramienta en otra dirección, solo tendrás que copiar el nuevo enlace de conexión y pegarlo otra vez en el panel.</p>
         </div>
       </div>
-      <CopyBox label="Prompt para tu otro proyecto" value={buildPrompt(base, project.public_key, domain, brand)} testid="copy-connect-prompt" />
+      <CopyBox label="Prompt para tu otro proyecto" value={buildPrompt(domain, brand)} testid="copy-connect-prompt" />
     </div>
   );
 }
