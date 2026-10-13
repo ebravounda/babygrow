@@ -1,7 +1,9 @@
 import json
 import re
 from datetime import datetime
+from types import SimpleNamespace
 
+import httpx
 from fastapi import HTTPException
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
@@ -11,7 +13,7 @@ MODELS = {
     "anthropic": "claude-sonnet-5-5",
     "openai": "gpt-5.6-terra",
     "gemini": "gemini-3.1-pro-preview",
-    "perplexity": "sonar",
+    "perplexity": "fast",
 }
 LABELS = {"anthropic": "Claude", "openai": "GPT", "gemini": "Gemini", "perplexity": "Perplexity"}
 # USD per 1M tokens (input, output), approximate
@@ -62,10 +64,31 @@ async def _chat(provider, system):
     return LlmChat(api_key=key, session_id=new_id(), system_message=system).with_model(provider, MODELS[provider])
 
 
+async def _perplexity(prompt, system, key):
+    async with httpx.AsyncClient(timeout=180) as c:
+        r = await c.post("https://api.perplexity.ai/v1/responses", headers={"Authorization": f"Bearer {key}"},
+                         json={"preset": MODELS["perplexity"], "instructions": system, "input": prompt})
+    if r.status_code >= 400:
+        raise Exception(f"HTTP {r.status_code}: {r.text[:250]}")
+    d = r.json()
+    text = d.get("output_text") or "".join(
+        c.get("text", "") for o in d.get("output", []) if o.get("type") == "message" for c in o.get("content", []))
+    u = d.get("usage") or {}
+    return text, SimpleNamespace(input_tokens=u.get("input_tokens", 0), output_tokens=u.get("output_tokens", 0))
+
+
 async def stream(prompt, system, provider, project_id=None, article_id=None, purpose="general"):
     await check_budget(project_id)
-    chat = await _chat(provider, system)
     try:
+        if provider == "perplexity":
+            key = await get_key(provider)
+            if not key:
+                raise HTTPException(400, "Falta la clave de Perplexity. Añádela en Ajustes.")
+            text, usage = await _perplexity(prompt, system, key)
+            await record_usage(provider, usage, project_id, article_id, purpose)
+            yield text
+            return
+        chat = await _chat(provider, system)
         async for ev in chat.stream_message(UserMessage(text=prompt)):
             if isinstance(ev, TextDelta):
                 yield ev.content
