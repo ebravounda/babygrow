@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 36% 7%;
+    --foreground: 210 20% 98%;
+    --card: 220 33% 13%;
+    --card-foreground: 210 20% 98%;
+    --popover: 220 33% 11%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 222 36% 7%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 20%;
+    --ring: 160 84% 39%;
+    --radius: 0.6rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
+  ::selection { background: rgba(16, 185, 129, 0.35); }
+}
+
+.font-editorial { font-family: 'Playfair Display', serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400; }
+.panel { @apply bg-slate-900/70 border border-slate-800 rounded-xl; }
+.grain::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.fade-up { animation: fadeUp .45s ease-out both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.caret::after { content: "▍"; color: #F59E0B; animation: blink 1s steps(1) infinite; margin-left: 2px; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.prose-news { color: #d1d5db; line-height: 1.75; font-size: 15px; }
+.prose-news h2 { font-family: 'Outfit'; font-size: 1.45rem; font-weight: 700; color: #f9fafb; margin: 1.6em 0 .5em; }
+.prose-news h3 { font-family: 'Outfit'; font-size: 1.15rem; font-weight: 600; color: #f3f4f6; margin: 1.3em 0 .4em; }
+.prose-news p { margin: .7em 0; }
+.prose-news ul, .prose-news ol { padding-left: 1.3em; margin: .7em 0; }
+.prose-news ul { list-style: disc; } .prose-news ol { list-style: decimal; }
+.prose-news a { color: #34d399; text-decoration: underline; text-underline-offset: 3px; }
+.prose-news blockquote { border-left: 3px solid #10B981; padding: .3em 1em; margin: 1em 0; background: rgba(16,185,129,.06); font-style: italic; }
+.prose-news table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 14px; }
+.prose-news th, .prose-news td { border: 1px solid #1f2937; padding: .5em .7em; text-align: left; }
+.prose-news th { background: #111827; color: #f9fafb; }
+.prose-news strong { color: #f9fafb; }
+.prose-news .mseo-product { border: 2px solid #10B981; border-radius: 12px; padding: 1em 1.2em; margin: 1.5em 0; }
+.prose-news .mseo-product-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #10B981; font-weight: 700; }
+.prose-news .mseo-product a, .prose-news .mseo-cta a { display: inline-block; background: #10B981; color: #0B0F17; padding: .45em 1em; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: .4em; }
+.prose-news .mseo-cta { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 1.2em; margin: 1.5em 0; }
+.prose-news .mseo-toc { background: #0f172a; border: 1px solid #1f2937; border-radius: 10px; padding: .9em 1.2em; margin: 1em 0; }
+.prose-news .mseo-disclaimer { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.35); padding: .6em 1em; border-radius: 8px; font-size: 13px; }
+.marker-chip { display: inline-block; font-family: 'JetBrains Mono'; font-size: 12px; background: rgba(99,102,241,.15); color: #a5b4fc; border: 1px dashed #6366f1; padding: 2px 8px; border-radius: 6px; }

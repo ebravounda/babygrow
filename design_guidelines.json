@@ -1,0 +1,108 @@
+{
+  "project_name": "Spanish SEO/AEO Content Engine - Sala de Redacción",
+  "app_type": "saas_app",
+  "archetype": "Swiss & High-Contrast Modern Editorial Newsroom",
+  "language": "es",
+  "theme": "dark",
+  "typography": {
+    "heading_font": "Outfit, sans-serif",
+    "body_font": "Plus Jakarta Sans, sans-serif",
+    "editorial_font": "Playfair Display, serif",
+    "mono_font": "JetBrains Mono, monospace",
+    "hierarchy": {
+      "h1": "text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight",
+      "h2": "text-2xl sm:text-3xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight",
+      "h4": "text-lg sm:text-xl font-semibold",
+      "body": "text-sm sm:text-base leading-relaxed text-slate-300",
+      "caption": "text-xs font-medium uppercase tracking-wider text-slate-400"
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "#0B0F17",
+      "secondary": "#111827",
+      "tertiary": "#1E293B",
+      "card": "#161E2E",
+      "overlay": "rgba(11, 15, 23, 0.85)"
+    },
+    "text": {
+      "primary": "#F9FAFB",
+      "secondary": "#9CA3AF",
+      "muted": "#6B7280",
+      "accent": "#10B981"
+    },
+    "accents": {
+      "emerald_primary": "#10B981",
+      "emerald_hover": "#059669",
+      "amber_streaming": "#F59E0B",
+      "indigo_ai": "#6366F1",
+      "rose_error": "#F43F5E",
+      "sky_info": "#0EA5E9"
+    },
+    "borders": {
+      "subtle": "#1F2937",
+      "active": "#374151",
+      "highlight": "#10B981"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-slate-900/80 border border-slate-800/80 shadow-2xl",
+    "card_style": "bg-slate-900/90 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all duration-200",
+    "live_indicator": "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse",
+    "intent_badge_high": "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-md text-xs font-semibold",
+    "intent_badge_medium": "bg-sky-500/15 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-md text-xs font-semibold",
+    "intent_badge_info": "bg-slate-700/50 text-slate-300 border border-slate-600/30 px-2.5 py-0.5 rounded-md text-xs font-semibold"
+  },
+  "layout_strategy": {
+    "sidebar": "Fixed width 260px, dark slate background, active item highlight with emerald glow, project switcher at top, grouped navigation sections",
+    "header": "Sticky top bar with current active project, quick actions (Redactar Ahora, Plan 30 Días, Estado API), BYOK quick indicator, language & admin profile",
+    "main_content": "Max width full with responsive padding (p-4 md:p-8), grid system using High-Density Bento Grid for analytics and double column for Live Editorial Cockpit"
+  },
+  "star_feature_live_writer": {
+    "name": "Sala de Redacción en Vivo (Live Streaming Writer)",
+    "description": "Centerpiece view showing real-time AI streaming creation with live quality score gauge (0-100), intent validation, structure checklist, AI model status indicator, and instantaneous web preview tab",
+    "key_elements": [
+      "Stream log timeline with active status badges (Investigando intención, Generando esquema, Escribiendo sección H2, Optimizando AEO)",
+      "Interactive Real-Time Quality Score meter (SEO, AEO, Fact-Check, Intent, Internal Links)",
+      "Live markdown/rich editor panel alongside HTML live preview",
+      "One-click 'Ajustar Tono' and 'Re-generar Sección' controls"
+    ]
+  },
+  "key_modules_mapping": {
+    "projects": "Project selector dropdown + Modal for creation (URL auto-brand analyzer, competitor domain input, target country/language, LLM choice like GPT-4o, Claude 3.5 Sonnet, Gemini Pro)",
+    "content_plan": "30-Day Intent-Prioritized Editorial Calendar with drag-and-drop state, filters by Purchase Intent (Alta, Media, Informacional), and auto-schedule toggle",
+    "ai_visibility": "Tracker dashboard measuring search engine & LLM mentions across Perplexity, ChatGPT, Claude & Gemini with Share of Voice charts",
+    "article_editor": "Full-screen rich editor with SEO/AEO metadata inspector, sensitive topic warnings, cluster map visualizer, and multi-format exporter",
+    "integrations": "Guided connection cards for WordPress, Shopify, Embeddable Blog Widget with copyable script tag, RSS, Sitemap, and llms.txt",
+    "repurposing": "1-click multi-platform generator (Boletín Email, Post LinkedIn, Hilo en X, Guion Video TikTok/Reels, Ficha Google Business)",
+    "site_audit": "Technical health grid checking Schema.org, canonicals, load speed, AEO structure score, and retroactive internal linking tool",
+    "api_settings": "BYOK management tab with encrypted password masking, connection latency test button, cost limit alerts & token consumption charts"
+  },
+  "image_urls": {
+    "newspaper_background": "https://images.unsplash.com/photo-1575435382668-16038e85fff0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHwyfHxlZGl0b3JpYWwlMjBuZXdzcm9vbSUyMGpvdXJuYWxpc3QlMjBjb250ZW50JTIwd3JpdGluZyUyMGRhc2hib2FyZHxlbnwwfHx8YmxhY2t8MTc5MTg5NDU4OXww&ixlib=rb-4.1.0&q=85",
+    "press_journal": "https://images.unsplash.com/photo-1487900562037-056962ab1fb0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHwxfHxlZGl0b3JpYWwlMjBuZXdzcm9vbSUyMGpvdXJuYWxpc3QlMjBjb250ZW50JTIwd3JpdGluZyUyMGRhc2hib2FyZHxlbnwwfHx8YmxhY2t8MTc5MTg5NDU4OXww&ixlib=rb-4.1.0&q=85",
+    "editor_workspace": "https://images.unsplash.com/photo-1607031767660-1685ab36ec8d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzOTB8MHwxfHNlYXJjaHw0fHxlZGl0b3JpYWwlMjBuZXdzcm9vbSUyMGpvdXJuYWxpc3QlMjBjb250ZW50JTIwd3JpdGluZyUyMGRhc2hib2FyZHxlbnwwfHx8YmxhY2t8MTc5MTg5NDU4OXww&ixlib=rb-4.1.0&q=85"
+  },
+  "instructions_to_main_agent": [
+    "Ensure ALL UI labels, messages, empty states, toasts, tooltips, and navigation text are in clear, natural Spanish (e.g., 'Sala de Redacción', 'Planificación 30 Días', 'Redacción en Vivo', 'Visibilidad AEO', 'Probar Conexión').",
+    "Add explicit data-testid attributes to all interactive components (e.g., data-testid='project-selector', data-testid='start-live-writing-button', data-testid='test-api-connection-btn').",
+    "Implement the BYOK settings view with full input masking, test connection simulated latency status, and model selector.",
+    "Make the Live Article Streaming experience interactive with simulated real-time text typewriter effect, live quality score progress gauge, and step-by-step stream log.",
+    "Ensure dark mode contrast meets APCA/WCAG standards with explicit text colors on hover (e.g. hover:bg-slate-800 hover:text-white).",
+    "Never use generic centered layouts or unstyled default HTML select tags — use Shadcn custom dropdowns, dialogs, badges, and tabs.",
+    "Integrate Lucide React icons for all menu items and status badges."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition (e.g., transition: all). Exclude transforms from universal transitions.",
+    "You MUST NOT center align the app container (.App { text-align: center; }).",
+    "Always use modern button styles like pill-shaped or sharp rectangular buttons with micro-interaction states.",
+    "NEVER use AI assistant emoji characters (🤖, 🧠, 💡, 🔮) as structural icons. Use Lucide SVG icons instead.",
+    "All interactive and key informational elements MUST include a data-testid attribute for automated testing."
+  ]
+}
