@@ -1,0 +1,30 @@
+{
+  "summary": "Comprehensive backend + frontend testing of Motor SEO/AEO Phase 1. Backend: 35/35 pytest tests pass covering auth (login OK/wrong-pw/me), API keys list/set/delete/test (anthropic connection returns ok, latency ~1s), projects CRUD and detail, authors/topics/clusters list, articles list/detail, all public endpoints (/public/{pid}/articles with 403 on wrong key, /articles/{slug}, /rss, /sitemap.xml, /llms.txt, /widget.js, SSR /blog/{pid} and /blog/{pid}/{slug} with JSON-LD, /track, /lead with 400 on bad email), insights (stats, leads, prompts, visibility, costs), unauth 401. Frontend: Login error for wrong password shown correctly; valid login redirects to home with sidebar listing Huerta Viva (1 article) and Test projects. Settings page lists all 5 keys with anthropic masked (sk-e••••••••2046) and 'Funciona' badge; 'Probar conexión' returns 'Conexión correcta (1087 ms)' toast. Project tabs (Marca, Plan 30 días, Redactar en vivo, Artículos, Publicar, Resultados, Visibilidad IA, Auditoría) all load correctly under /p/{pid}/* routes with proper data (30 topics with intent badges, pillar, filters; library shows published article slug material-jardineria-urbana quality 88; publish widget snippet copy area; visibility shows Claude 100% mention pos#3; audit returns score 50 with prioritized issues; costs 0.3038$ broken down).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py uses deprecated FastAPI @app.on_event startup/shutdown (works but Starlette recommends lifespan handlers). Low priority.",
+    "CORS configured with allow_credentials=False and allow_origins=['*'] — fine for public widget, but if auth cookies are added later, revisit.",
+    "routes_main.set_key: upsert path with empty value but existing doc still unsets 'last_test' — OK but could be clearer.",
+    "routes_public.send_lead_email reports 'sin_configurar' silently when Resend missing — correctly expected per spec.",
+    "SSE article generation (POST /api/articles/generate) was NOT exercised end-to-end from UI due to 1-2 min duration; verified route exists and codepath via autopilot in server.py. Recommend main agent spot-check live writer once."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (35/35)", "frontend": "100% of pages render; live SSE writer flow not fully timed-executed"},
+  "test_credentials": "admin@motorseo.app / Admin2026! (from /app/memory/test_credentials.md). Pre-seeded project Huerta Viva (pid=2714d4205e4e450ab4a0eea09815f533, public_key=2Rd1ruZuZB7AsaqUZR8SeH41i6dbBdXV, slug=material-jardineria-urbana).",
+  "seed_data_creation": "None (test created and cleaned up a fake 'gemini' key; created a TEST_lead@example.com lead and a 'TEST_' tracking event — these remain in db.leads/db.events of Huerta Viva, acceptable).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend regression file at /app/backend/tests/backend_test.py (35 tests, run with pytest). All public endpoints and auth paths covered. For UI testing use routes under /p/{pid}/{marca|plan|redactar|articulos|publicar|estadisticas|visibilidad|auditoria} and /ajustes, /costes. Login testids: login-email-input, login-password-input, login-submit-button, login-error. 'Probar conexión' button for anthropic currently returns ok (~1s). Writer streaming (POST /api/articles/generate) takes 1-2 min; use SSE client and words=800 to speed up."
+}
