@@ -62,6 +62,8 @@ def mask(v):
 
 
 def base_url(request: Request):
+    if os.environ.get("PUBLIC_URL"):
+        return os.environ["PUBLIC_URL"].rstrip("/")
     proto = request.headers.get("x-forwarded-proto", request.url.scheme).split(",")[0]
     host = request.headers.get("x-forwarded-host", request.headers.get("host", request.url.netloc))
     return f"{proto}://{host}"

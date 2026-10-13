@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: ${MONGO_IMAGE:-mongo:7}
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks: [motorseo]
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      MONGO_URL: mongodb://mongo:27017
+    depends_on: [mongo]
+    networks: [motorseo]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+      args:
+        PUBLIC_URL_ARG: ${PUBLIC_URL}
+    restart: unless-stopped
+    depends_on: [backend]
+    ports:
+      - "127.0.0.1:${APP_PORT:-8090}:80"
+    networks: [motorseo]
+
+volumes:
+  mongo_data:
+
+networks:
+  motorseo:

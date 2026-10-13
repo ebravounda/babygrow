@@ -1,0 +1,11 @@
+**/node_modules
+**/build
+**/__pycache__
+**/.env
+.git
+.emergent
+test_reports
+tests
+backups
+memory
+.env.prod
