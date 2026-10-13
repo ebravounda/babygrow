@@ -1,33 +1,53 @@
+name: motorseo
+
+x-common: &common
+  restart: unless-stopped
+  networks: [motorseo]
+  labels:
+    com.motorseo.app: "1"
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
   mongo:
+    <<: *common
     image: ${MONGO_IMAGE:-mongo:7}
-    restart: unless-stopped
+    command: ["--wiredTigerCacheSizeGB", "0.5"]
     volumes:
       - mongo_data:/data/db
-    networks: [motorseo]
+    mem_limit: 1g
 
   backend:
+    <<: *common
     build:
       context: .
       dockerfile: deploy/Dockerfile.backend
-    restart: unless-stopped
+      labels:
+        com.motorseo.app: "1"
+    image: motorseo-backend:latest
     env_file: .env.prod
     environment:
       MONGO_URL: mongodb://mongo:27017
     depends_on: [mongo]
-    networks: [motorseo]
+    mem_limit: 1g
 
   frontend:
+    <<: *common
     build:
       context: .
       dockerfile: deploy/Dockerfile.frontend
       args:
         PUBLIC_URL_ARG: ${PUBLIC_URL}
-    restart: unless-stopped
+      labels:
+        com.motorseo.app: "1"
+    image: motorseo-frontend:latest
     depends_on: [backend]
     ports:
       - "127.0.0.1:${APP_PORT:-8090}:80"
-    networks: [motorseo]
+    mem_limit: 256m
 
 volumes:
   mongo_data:

@@ -5,5 +5,5 @@ cd "$(dirname "$0")/.."
 ./deploy/backup.sh
 git pull --ff-only
 docker compose up -d --build
-docker image prune -f >/dev/null
+docker image prune -f --filter "label=com.motorseo.app=1" >/dev/null
 echo "Actualizado: $(git log -1 --format='%h %s')"

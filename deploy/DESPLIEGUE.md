@@ -7,6 +7,14 @@ Todo corre en Docker: base de datos (MongoDB), servidor (backend) y web (fronten
 - Docker. Si no lo tienes, el instalador lo instala; también puedes hacerlo desde aaPanel → App Store → Docker.
 - El código en un repositorio de GitHub. En Emergent: botón **Save to GitHub**.
 
+## 0. Revisión previa (no toca nada)
+```bash
+./deploy/check.sh
+```
+Muestra tus contenedores actuales y comprueba que el puerto, los nombres, la RAM, el disco y la CPU sean compatibles. El instalador la ejecuta también y te pide confirmación antes de seguir.
+
+**Aislamiento garantizado:** todo lleva el prefijo `motorseo` (contenedores, red `motorseo_motorseo`, volumen `motorseo_mongo_data` e imágenes `motorseo-*`). MongoDB no se publica fuera de Docker. La app solo escucha en `127.0.0.1` y en un puerto libre que se elige automáticamente. Los registros están limitados a 30 MB por servicio, la memoria está limitada (Mongo 1 GB, backend 1 GB, web 256 MB) y la limpieza de imágenes solo borra las de Motor SEO.
+
 ## 1. Primera instalación (una sola vez)
 Por SSH en tu servidor:
 ```bash
@@ -21,7 +29,7 @@ El instalador te pide el email y la contraseña del administrador. Después crea
 
 ## 2. aaPanel: redirigir el dominio
 1. **Website → seo.mitiendapro.com → Conf → Reverse proxy → Add reverse proxy**.
-2. Target URL: `http://127.0.0.1:8090`. Deja Sent Domain en `$host`.
+2. Target URL: `http://127.0.0.1:PUERTO`, con el puerto que muestra el instalador al terminar (8090 si estaba libre). Deja Sent Domain en `$host`.
 3. Pestaña **SSL**: emite un certificado Let's Encrypt (o instala un *Origin Certificate* de Cloudflare) y activa *Force HTTPS*.
 4. Para que la redacción en vivo funcione bien, edita la configuración del proxy y añade dentro de `location /`:
 ```
